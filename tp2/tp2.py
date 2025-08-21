@@ -4,6 +4,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc, RocCurveDisplay
+import matplotlib.pyplot as plt
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
 
 # Carregar datasets e unificar
 fake = pd.read_csv("https://raw.githubusercontent.com/professortiagoinfnet/inteligencia_artificial/main/Fake.csv")
@@ -50,7 +53,6 @@ for k in k_values:
     y_pred = knn.predict(X_val_tfidf)
     acc = accuracy_score(y_val, y_pred)
     results_holdout.append((k, acc))
-    print(f"[HOLDOUT] K={k} -> Acurácia: {acc:.4f}")
 
 # Validação Cruzada com TF-IDF dentro do Pipeline
 #      -> evita vazamento: TF-IDF é fitado só no treino de cada fold
@@ -76,7 +78,6 @@ for k in k_values:
         n_jobs=-1
     )
     results_cv.append((k, scores.mean(), scores.std()))
-    print(f"[CV 5-fold] K={k} -> Acc média: {scores.mean():.4f} (+/- {scores.std():.4f})")
 
 # 6) Resumos
 df_holdout = pd.DataFrame(results_holdout, columns=["K", "Acurácia (holdout)"])\
@@ -88,3 +89,34 @@ print("\nResumo (Holdout):")
 print(df_holdout)
 print("\nResumo (Validação Cruzada 5-fold):")
 print(df_cv)
+
+# Questão 4
+metrics_results = []
+
+for k in k_values:
+    knn = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
+    knn.fit(X_train_tfidf, y_train)
+    
+    y_pred = knn.predict(X_val_tfidf)
+    y_prob = knn.predict_proba(X_val_tfidf)[:, 1]  # para calcular AUC
+    
+    acc = accuracy_score(y_val, y_pred)
+    precision = precision_score(y_val, y_pred)
+    recall = recall_score(y_val, y_pred)
+    f1 = f1_score(y_val, y_pred)
+    auc = roc_auc_score(y_val, y_prob)
+    
+    # Especificidade = TN / (TN + FP)
+    tn, fp, fn, tp = confusion_matrix(y_val, y_pred).ravel()
+    specificity = tn / (tn + fp)
+
+    metrics_results.append((k, acc, precision, recall, f1, specificity, auc))
+
+# Criar DataFrame com as métricas
+df_metrics = pd.DataFrame(metrics_results, columns=[
+    "K", "Acurácia", "Precisão", "Recall", "F1-score", "Especificidade", "AUC"
+])
+
+# Mostrar resultados ordenados por F1 ou AUC (você escolhe)
+print("\nResumo Completo de Métricas (Holdout):")
+print(df_metrics.sort_values("F1-score", ascending=False).reset_index(drop=True))
