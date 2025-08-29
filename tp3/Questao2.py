@@ -17,30 +17,30 @@ from sklearn.preprocessing import LabelBinarizer
 #1) Criação das features:Aplicar Análise de Componentes Principais (PCA) para reduzir a dimensionalidade dos conjuntos de dados.
 #==========================================
 
-# 1. Carregar o dataset sem cabeçalho
+# Carregar o dataset sem cabeçalho
 url = "https://raw.githubusercontent.com/professortiagoinfnet/inteligencia_artificial/main/sonar_dataset.csv"
 
 # Criar nomes das colunas: 60 colunas + 1 de classe
 col_names = [f'feature_{i}' for i in range(60)] + ['Class']
 df = pd.read_csv(url, header=None, names=col_names)
 
-# 2. Separar features (X) e classe (y)
+# Separar features (X) e classe (y)
 X = df.drop(columns=['Class'])
 y = df['Class']
 
-# 3. Padronizar os dados
+# Padronizar os dados
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# 4. Aplicar PCA (mantendo todas as componentes)
+# Aplicar PCA (mantendo todas as componentes)
 pca = PCA()
 X_pca = pca.fit_transform(X_scaled)
 
-# 5. Mostrar shapes
+# Mostrar shapes
 print("Shape original:", X.shape)
 print("Shape após PCA:", X_pca.shape)
 
-# 6. Mostrar variância explicada
+# Mostrar variância explicada
 plt.figure(figsize=(8,5))
 plt.plot(range(1, 61), pca.explained_variance_ratio_.cumsum(), marker='o')
 plt.title("Variância Acumulada por Componentes Principais")
@@ -59,14 +59,14 @@ X_train, X_test, y_train, y_test = train_test_split(
     X_pca, y, test_size=0.2, random_state=42, stratify=y
 )
 
-# 9. Criar e treinar o modelo de árvore de decisão
+# Criar e treinar o modelo de árvore de decisão
 modelo_arvore = DecisionTreeClassifier(random_state=42)
 modelo_arvore.fit(X_train, y_train)
 
-# 10. Fazer previsões no conjunto de teste
+# Fazer previsões no conjunto de teste
 y_pred = modelo_arvore.predict(X_test)
 
-# 11. Avaliar o modelo
+# Avaliar o modelo
 print("\n Avaliação do Modelo de Árvore de Decisão:")
 print("Acurácia:", accuracy_score(y_test, y_pred))
 print("\nMatriz de Confusão:")
@@ -133,12 +133,12 @@ print("Melhor acurácia média:", round(grid_search.best_score_, 4))
 #5) Pruning de Árvores de Decisão: Realizar o pruning (poda) em árvores de decisão para prevenir o overfitting e melhorar a generalização do modelo.
 #==========================================
 
-# 1. Treinar modelo base (sem poda) para pegar os alphas possíveis
+# Treinar modelo base (sem poda) para pegar os alphas possíveis
 modelo_pruning_base = DecisionTreeClassifier(random_state=42)
 path = modelo_pruning_base.cost_complexity_pruning_path(X_train, y_train)
 ccp_alphas = path.ccp_alphas[:-1]  # remove o maior alpha (zera tudo)
 
-# 2. Treinar uma árvore para cada alpha
+# Treinar uma árvore para cada alpha
 modelos_podados = []
 scores_teste = []
 
@@ -149,7 +149,7 @@ for alpha in ccp_alphas:
     modelos_podados.append(modelo_podado)
     scores_teste.append(score)
 
-# 3. Plotar acurácia vs alpha
+# Plotar acurácia vs alpha
 plt.figure(figsize=(8, 5))
 plt.plot(ccp_alphas, scores_teste, marker='o')
 plt.xlabel("ccp_alpha")
@@ -158,7 +158,7 @@ plt.title("Poda de Árvore: Acurácia vs ccp_alpha")
 plt.grid()
 plt.show()
 
-# 4. Melhor modelo podado
+# Melhor modelo podado
 melhor_indice = scores_teste.index(max(scores_teste))
 melhor_alpha = ccp_alphas[melhor_indice]
 melhor_modelo_podado = modelos_podados[melhor_indice]
