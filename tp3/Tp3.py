@@ -16,7 +16,6 @@ from sklearn.preprocessing import LabelBinarizer
 #==========================================
 #1) Criação das features:Aplicar Análise de Componentes Principais (PCA) para reduzir a dimensionalidade dos conjuntos de dados.
 #==========================================
-
 # Carregar o dataset sem cabeçalho
 url = "https://raw.githubusercontent.com/professortiagoinfnet/inteligencia_artificial/main/sonar_dataset.csv"
 
@@ -69,8 +68,10 @@ y_pred = modelo_arvore.predict(X_test)
 # Avaliar o modelo
 print("\n Avaliação do Modelo de Árvore de Decisão:")
 print("Acurácia:", accuracy_score(y_test, y_pred))
+
 print("\nMatriz de Confusão:")
 print(confusion_matrix(y_test, y_pred))
+
 print("\nRelatório de Classificação:")
 print(classification_report(y_test, y_pred))
 
